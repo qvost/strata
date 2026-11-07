@@ -20,6 +20,7 @@ bench/libfast_hybrid.so
 data/*.hdf5
 data/*.fvecs
 data/*.ivecs
+data/*.faiss
 data/*.tar.gz
 data/sift.tar.gz
 

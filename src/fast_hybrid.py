@@ -95,6 +95,16 @@ class FastHybridSearcher:
         self._neighbors = np.ascontiguousarray(graph.neighbors, dtype=np.int32)
         self._scales2 = np.ascontiguousarray(sq8.scales2, dtype=np.float32)
 
+        self._bq_thresholds = np.ascontiguousarray(bq.thresholds, dtype=np.float32)
+        self._sq8_mins = np.ascontiguousarray(sq8.mins, dtype=np.float32)
+        self._sq8_inv_scales = np.ascontiguousarray(1.0 / sq8.scales, dtype=np.float32)
+        self.dim = int(bq.dim)
+
+        self._single_ids = np.full((1, 1000), -1, dtype=np.int64)
+        self._single_dists = np.zeros((1, 1000), dtype=np.float32)
+        self._single_lat = np.zeros(1, dtype=np.int64)
+        self._single_q = np.empty((1, self.dim), dtype=np.float32)
+
         self._view = _GraphView(
             self._levels.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)),
             self._offsets.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
@@ -127,6 +137,9 @@ class FastHybridSearcher:
             ctypes.POINTER(ctypes.c_int64),
             ctypes.POINTER(ctypes.c_float),
             ctypes.POINTER(ctypes.c_int64),
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.POINTER(ctypes.c_float),
         ]
         self._fn.restype = ctypes.c_int
 
@@ -148,10 +161,41 @@ class FastHybridSearcher:
                 np.empty((0, k), dtype=np.float32),
                 np.empty(0, dtype=np.int64),
             )
-        query_bq = np.ascontiguousarray(self.bq.encode(queries), dtype=np.uint64)
-        query_code = np.ascontiguousarray(
-            self.sq8.prepare_query(queries), dtype=np.float32
-        )
+
+        if n_queries == 1 and k <= 1000:
+            self._single_q[0] = queries[0]
+            base_ptr = (
+                self.base.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+                if self.rerank == "fp32"
+                else ctypes.POINTER(ctypes.c_float)()
+            )
+            rc = self._fn(
+                ctypes.byref(self._view),
+                self.bq_codes.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)),
+                int(self.bq.n_words),
+                self.sq8_codes.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)),
+                self._scales2.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                base_ptr,
+                self._single_q.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                ctypes.POINTER(ctypes.c_uint64)(),
+                ctypes.POINTER(ctypes.c_float)(),
+                1,
+                int(dim),
+                int(ef_search),
+                int(ef_bq),
+                int(k),
+                0 if self.rerank == "sq8" else 1,
+                self._single_ids.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+                self._single_dists.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                self._single_lat.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+                self._bq_thresholds.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                self._sq8_mins.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                self._sq8_inv_scales.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            )
+            if rc != 0:
+                raise RuntimeError(f"fast_hybrid_search_batch failed with code {rc}")
+            return self._single_ids[:, :k].copy(), self._single_dists[:, :k].copy(), self._single_lat.copy()
+
         ids = np.full((n_queries, k), -1, dtype=np.int64)
         dists = np.zeros((n_queries, k), dtype=np.float32)
         latency_ns = np.zeros(n_queries, dtype=np.int64)
@@ -169,8 +213,8 @@ class FastHybridSearcher:
             self._scales2.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
             base_ptr,
             queries.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            query_bq.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)),
-            query_code.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            ctypes.POINTER(ctypes.c_uint64)(),
+            ctypes.POINTER(ctypes.c_float)(),
             int(n_queries),
             int(dim),
             int(ef_search),
@@ -180,6 +224,9 @@ class FastHybridSearcher:
             ids.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
             dists.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
             latency_ns.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
+            self._bq_thresholds.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            self._sq8_mins.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            self._sq8_inv_scales.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
         )
         if rc != 0:
             raise RuntimeError(f"fast_hybrid_search_batch failed with code {rc}")

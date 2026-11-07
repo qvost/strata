@@ -85,6 +85,19 @@ class HNSWIndex:
         self.index.add(np.ascontiguousarray(vectors, dtype=np.float32))
         self._graph: Optional[FAISSGraph] = None
 
+    @classmethod
+    def load(cls, path: str | Path) -> "HNSWIndex":
+        obj = cls.__new__(cls)
+        obj.index = faiss.read_index(str(path))
+        obj.dim = int(obj.index.d)
+        obj.M = int(obj.index.hnsw.nb_neighbors(1))
+        obj.ef_construction = int(obj.index.hnsw.efConstruction)
+        obj._graph = None
+        return obj
+
+    def save(self, path: str | Path) -> None:
+        faiss.write_index(self.index, str(path))
+
     @property
     def ntotal(self) -> int:
         return int(self.index.ntotal)

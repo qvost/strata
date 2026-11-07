@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T10:42:25+00:00",
+  "generated_at": "2026-11-07T11:41:26+00:00",
   "dataset": "SIFT1M",
   "dataset_path": "/home/qvost/Projects/vectorsearch/data/sift-128-euclidean.hdf5",
   "n_base": 1000000,

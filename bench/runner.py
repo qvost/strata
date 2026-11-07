@@ -722,23 +722,34 @@ def run(args: argparse.Namespace) -> int:
         # -------------------------------------------------------------- A / D
         if need_graph:
             try:
-                print(
-                    f"[runner] building FP32 HNSW (M={args.M}, "
-                    f"efConstruction={args.ef_construction})",
-                    flush=True,
-                )
+                cache_path = Path(args.data_dir) / f"hnsw_M{args.M}_ef{args.ef_construction}_{dataset.n_base}.faiss"
                 t_build = time.perf_counter()
-                index_a = HNSWIndex(
-                    dataset.base,
-                    M=args.M,
-                    ef_construction=args.ef_construction,
-                    verbose=True,
-                )
+                if cache_path.exists():
+                    print(f"[runner] loading cached FP32 HNSW from {cache_path.name}", flush=True)
+                    index_a = HNSWIndex.load(cache_path)
+                else:
+                    print(
+                        f"[runner] building FP32 HNSW (M={args.M}, "
+                        f"efConstruction={args.ef_construction})",
+                        flush=True,
+                    )
+                    index_a = HNSWIndex(
+                        dataset.base,
+                        M=args.M,
+                        ef_construction=args.ef_construction,
+                        verbose=True,
+                    )
+                    if dataset.n_base >= 100000:
+                        try:
+                            index_a.save(cache_path)
+                            print(f"[runner] saved index cache to {cache_path.name}", flush=True)
+                        except Exception as e:
+                            print(f"[runner] warning: failed to cache index: {e}", flush=True)
                 graph = index_a.graph()
                 build_s = time.perf_counter() - t_build
                 graph_bytes = graph.graph_bytes()
                 print(
-                    f"[runner] FP32 index built in {build_s:.1f}s "
+                    f"[runner] FP32 index ready in {build_s:.1f}s "
                     f"(graph {graph_bytes / 1e6:.1f} MB)",
                     flush=True,
                 )
