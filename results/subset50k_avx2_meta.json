@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-11-07T10:13:30+00:00",
+  "dataset": "SIFT1M[50000]",
+  "dataset_path": "/home/qvost/Projects/vectorsearch/data/sift-128-euclidean.hdf5",
+  "n_base": 50000,
+  "n_queries": 500,
+  "dim": 128,
+  "k": 10,
+  "M": 32,
+  "ef_construction": 200,
+  "ef_search": [
+    10,
+    20,
+    40,
+    80,
+    160,
+    320
+  ],
+  "ef_bq": 64,
+  "rerank": "sq8",
+  "hybrid_backend": "fast",
+  "bq_threshold": "median",
+  "configs": [
+    "D"
+  ],
+  "threads": 1,
+  "platform": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+  "cpu": "13th Gen Intel(R) Core(TM) i7-13620H",
+  "python": "3.14.9",
+  "numpy": "2.5.4",
+  "faiss": "1.15.1",
+  "perf_available": true,
+  "notes": "Single-threaded per-query latency. LLC counters are user-space hardware events (perf_event_open, exclude_kernel=1).",
+  "failures": [],
+  "rows": 6
+}

@@ -1,0 +1,35 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.dylib
+*.dll
+
+# Compiled C++ test binaries and libraries
+test_kernels
+bench/*.so
+bench/libfast_hybrid.so
+
+# Datasets and large binary blobs
+data/*.hdf5
+data/*.fvecs
+data/*.ivecs
+data/*.tar.gz
+data/sift.tar.gz
+
+# IDE and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local scratch and task logs
+scratch/
+.system_generated/

@@ -1,0 +1,4 @@
+numpy>=2.0
+h5py>=3.10
+faiss-cpu>=1.8
+hnswlib>=0.8
