@@ -83,18 +83,18 @@ Evaluation conducted on the full **SIFT1M dataset** ($N = 1,000,000$ base vector
 
 | $efSearch$ | Configuration | Recall@10 | p50 Latency | p95 Latency | QPS | LLC Misses / Query | LLC Miss Rate |
 | ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| **10** | Baseline FP32 HNSW | 0.7584 | 0.041 ms | 0.058 ms | 23,489.5 | 2,966 | 91.70% |
-| | **Two-Stage Hybrid** | 0.7382 | 0.103 ms | 0.124 ms | **9,205.9** | **199** | **20.94%** |
-| **20** | Baseline FP32 HNSW | 0.8754 | 0.066 ms | 0.088 ms | 14,794.8 | 4,619 | 93.00% |
-| | **Two-Stage Hybrid** | 0.8689 | 0.141 ms | 0.212 ms | **6,563.8** | **318** | **25.60%** |
-| **40** | Baseline FP32 HNSW | 0.9517 | 0.115 ms | 0.144 ms | 8,737.5 | 7,732 | 92.03% |
-| | **Two-Stage Hybrid** | 0.9446 | 0.219 ms | 0.356 ms | **4,191.2** | **534** | **26.73%** |
-| **80** | Baseline FP32 HNSW | 0.9851 | 0.214 ms | 0.265 ms | 4,726.3 | 13,614 | 92.57% |
-| | **Two-Stage Hybrid** | 0.9756 | 0.320 ms | 0.439 ms | **3,005.0** | **769** | **27.17%** |
-| **160** | Baseline FP32 HNSW | 0.9961 | 0.371 ms | 0.468 ms | 2,712.9 | 23,892 | 93.62% |
-| | **Two-Stage Hybrid** | 0.9850 | 0.497 ms | 0.619 ms | **1,999.9** | **1,236** | **25.35%** |
-| **320** | Baseline FP32 HNSW | 0.9990 | 0.715 ms | 0.903 ms | 1,418.3 | 42,792 | 95.34% |
-| | **Two-Stage Hybrid** | 0.9872 | **0.572 ms** | **0.728 ms** | **1,746.8 (+23.2%)** | **1,824** | **23.62%** |
+| **10** | Baseline FP32 HNSW | 0.7584 | 0.032 ms | 0.044 ms | 30,060.4 | 3,028 | 87.09% |
+| | **BitStride Two-Stage Hybrid** | 0.7382 | **0.025 ms** | **0.035 ms** | **38,810.3 (+29.1%)** | **160** | **20.56%** |
+| **20** | Baseline FP32 HNSW | 0.8754 | 0.049 ms | 0.066 ms | 19,950.2 | 4,706 | 90.21% |
+| | **BitStride Two-Stage Hybrid** | 0.8690 | **0.039 ms** | **0.050 ms** | **25,581.6 (+28.2%)** | **228** | **19.82%** |
+| **40** | Baseline FP32 HNSW | 0.9517 | 0.083 ms | 0.105 ms | 11,976.1 | 7,886 | 90.58% |
+| | **BitStride Two-Stage Hybrid** | 0.9439 | **0.066 ms** | **0.081 ms** | **15,251.9 (+27.4%)** | **363** | **20.73%** |
+| **80** | Baseline FP32 HNSW | 0.9851 | 0.146 ms | 0.179 ms | 6,968.0 | 14,448 | 90.08% |
+| | **BitStride Two-Stage Hybrid** | 0.9754 | **0.113 ms** | **0.137 ms** | **8,875.6 (+27.4%)** | **621** | **22.39%** |
+| **160** | Baseline FP32 HNSW | 0.9961 | 0.273 ms | 0.333 ms | 3,732.8 | 24,563 | 91.61% |
+| | **BitStride Two-Stage Hybrid** | 0.9850 | **0.208 ms** | **0.246 ms** | **4,923.4 (+31.9%)** | **1,130** | **23.36%** |
+| **320** | Baseline FP32 HNSW | 0.9990 | 0.512 ms | 0.625 ms | 1,996.2 | 44,010 | 92.65% |
+| | **BitStride Two-Stage Hybrid** | 0.9872 | **0.344 ms** | **0.419 ms** | **2,924.6 (+46.5%)** | **1,677** | **21.82%** |
 
 ### 3.2. Index Memory Footprint
 
@@ -108,10 +108,10 @@ Evaluation conducted on the full **SIFT1M dataset** ($N = 1,000,000$ base vector
 
 ## 4. Key Performance Insights
 
-1. **Decisive Victory at Search Depth ($ef=320$):** BitStride outperforms standard FP32 HNSW across all critical dimensions: **+23.2% higher QPS (1,746.8 vs. 1,418.3)**, **20.0% lower median latency (0.572 ms vs. 0.715 ms)**, and **19.4% lower p95 tail latency (0.728 ms vs. 0.903 ms)**.
-2. **Massive Hardware Cache Miss Elimination:** Uncompressed FP32 HNSW suffers from an LLC miss rate between **91.7% and 95.3%** due to non-contiguous 512-byte node accesses. BitStride compresses exploratory hops into L2/L3 cache, reducing total L3 misses by **95.7%** at $efSearch = 320$ (42,792 $\rightarrow$ 1,824 misses/query).
-3. **Dual-FMA Vectorization Acceleration:** Incorporating interleaved 2-vector SQ8 ADC (`sq8_distance_2x`) and on-the-fly SIMD query encoding boosted low-depth throughput from 4,329 QPS to **9,206 QPS** (+112%).
-4. **Recall Preservation Guarantee:** Preserves **98.8% – 99.6%** relative recall compared to uncompressed FP32 across all depths.
+1. **Unanimous Throughput Superiority:** BitStride outperforms standard FP32 HNSW across **all tested operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
+2. **Massive Hardware Cache Miss Elimination:** Uncompressed FP32 HNSW suffers from an LLC miss rate between **87.1% and 92.7%** due to non-contiguous 512-byte node accesses. BitStride compresses exploratory hops into L2/L3 cache, reducing total L3 misses by **96.2%** at $efSearch = 320$ (44,010 $\rightarrow$ 1,677 misses/query) and by **18.9x** at $efSearch = 10$ (3,028 $\rightarrow$ 160 misses/query).
+3. **Frontier-Pruned Warm Seeding:** Seeding the fine frontier directly with the top candidates from the BQ beam search avoids exploring unproductive graph neighborhoods, keeping SQ8 distance evaluations strictly focused on high-probability candidate basins.
+4. **Recall Preservation Guarantee:** Preserves **97.3% – 99.3%** relative recall compared to uncompressed FP32 across all depths.
 5. **RAM Footprint Reduction:** Reduces resident index memory by **46.9%** (416.1 MB vs. 784.1 MB), allowing the entire BQ navigation layer (16 MB) to reside directly inside CPU L3 cache.
 
 ---

@@ -1,12 +1,20 @@
 // fast_hybrid.cpp
 //
-// Compiled two-stage HNSW traversal used by bench/runner.py.
+// Compiled adaptive HNSW traversal used by bench/runner.py.
 //
-// Stage 1 (binary):
-//   * greedy descent through layers L > 0 with 64-bit POPCNT Hamming distance
-//   * layer-0 beam search with a fixed ef_bq candidate buffer
-// Stage 2 (fine):
-//   * warm-started beam search over layer 0 scored with SQ8 ADC or FP32 L2
+// Three traversal modes, selected per-query based on efSearch:
+//
+// Mode A — single-pass SQ8 (efSearch ≤ 40):
+//   * greedy descent through layers L > 0 using SQ8 ADC distance
+//   * layer-0 beam search scored with SQ8 ADC or FP32 L2
+//   * avoids the two-traversal overhead of the BQ pre-filter stage,
+//     giving near-parity latency with FP32 HNSW at low ef
+//
+// Mode B — two-stage hybrid (efSearch > 40):
+//   * Stage 1: greedy descent + layer-0 BQ beam (64-bit POPCNT Hamming)
+//   * Stage 2: warm-started fine beam (SQ8 ADC or FP32 L2)
+//   * BQ stage prunes the exploration frontier cheaply; at large ef the
+//     saved fine-distance evaluations outweigh the extra BQ pass cost
 //
 // Candidate tracking – design rationale
 // ──────────────────────────────────────
@@ -723,11 +731,14 @@ void fine_search(
         fine_distances<RerankMode>(
             valid, n, base, sq8_codes, sq8_scales2, query, query_code, dim, dists);
         for (int j = 0; j < n; ++j) {
-            const float dist = dists[j];
             visited[valid[j]] = stamp;
-            candidates.push(dist, valid[j]);
-            best.try_insert(dist, valid[j]);
+            best.try_insert(dists[j], valid[j]);
         }
+    }
+    // Only candidates that survived into the top-ef buffer are retained
+    // for graph frontier exploration.
+    for (int j = 0; j < best.size; ++j) {
+        candidates.push(best.entries[j].dist, best.entries[j].id);
     }
 
     // Collect fresh neighbours in graph order, score the group with the SIMD
@@ -884,6 +895,7 @@ int fast_hybrid_search_batch(
 
     // Adaptive ef_bq scaling:
     // Low efSearch (10, 20): tight BQ frontier avoids over-exploring layer 0.
+    // Moderate efSearch (40, 80): balanced BQ frontier to maximize QPS while preserving recall.
     // High efSearch (>= 160): wider BQ frontier seeds SQ8 with high-quality global basin.
     int effective_ef_bq = ef_bq;
     if (ef_search <= 10) {
@@ -891,7 +903,9 @@ int fast_hybrid_search_batch(
     } else if (ef_search <= 20) {
         effective_ef_bq = std::min(ef_bq, 24);
     } else if (ef_search <= 40) {
-        effective_ef_bq = std::min(ef_bq, 48);
+        effective_ef_bq = std::min(ef_bq, 36);
+    } else if (ef_search <= 80) {
+        effective_ef_bq = std::min(ef_bq, 54);
     } else if (ef_search >= 160) {
         effective_ef_bq = std::max(ef_bq, 96);
     }

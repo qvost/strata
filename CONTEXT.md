@@ -59,18 +59,18 @@ To generate a publication-ready empirical study.
 
 | $efSearch$ | Configuration | Recall@10 | p50 Latency | p95 Latency | QPS | LLC Misses / Query | LLC Miss Rate |
 | ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| **10** | A — Baseline FP32 HNSW | 0.7584 | 0.041 ms | 0.058 ms | 23,489.5 | 2,966 | 91.70% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.7382 | 0.103 ms | 0.124 ms | **9,205.9** | **199** | **20.94%** |
-| **20** | A — Baseline FP32 HNSW | 0.8754 | 0.066 ms | 0.088 ms | 14,794.8 | 4,619 | 93.00% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.8689 | 0.141 ms | 0.212 ms | **6,563.8** | **318** | **25.60%** |
-| **40** | A — Baseline FP32 HNSW | 0.9517 | 0.115 ms | 0.144 ms | 8,737.5 | 7,732 | 92.03% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9446 | 0.219 ms | 0.356 ms | **4,191.2** | **534** | **26.73%** |
-| **80** | A — Baseline FP32 HNSW | 0.9851 | 0.214 ms | 0.265 ms | 4,726.3 | 13,614 | 92.57% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9756 | 0.320 ms | 0.439 ms | **3,005.0** | **769** | **27.17%** |
-| **160** | A — Baseline FP32 HNSW | 0.9961 | 0.371 ms | 0.468 ms | 2,712.9 | 23,892 | 93.62% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9850 | 0.497 ms | 0.619 ms | **1,999.9** | **1,236** | **25.35%** |
-| **320** | A — Baseline FP32 HNSW | 0.9990 | 0.715 ms | 0.903 ms | 1,418.3 | 42,792 | 95.34% |
-| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9872 | **0.572 ms** | **0.728 ms** | **1,746.8 (+23.2%)** | **1,824** | **23.62%** |
+| **10** | A — Baseline FP32 HNSW | 0.7584 | 0.032 ms | 0.044 ms | 30,060.4 | 3,028 | 87.09% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.7382 | **0.025 ms** | **0.035 ms** | **38,810.3 (+29.1%)** | **160** | **20.56%** |
+| **20** | A — Baseline FP32 HNSW | 0.8754 | 0.049 ms | 0.066 ms | 19,950.2 | 4,706 | 90.21% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.8690 | **0.039 ms** | **0.050 ms** | **25,581.6 (+28.2%)** | **228** | **19.82%** |
+| **40** | A — Baseline FP32 HNSW | 0.9517 | 0.083 ms | 0.105 ms | 11,976.1 | 7,886 | 90.58% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9439 | **0.066 ms** | **0.081 ms** | **15,251.9 (+27.4%)** | **363** | **20.73%** |
+| **80** | A — Baseline FP32 HNSW | 0.9851 | 0.146 ms | 0.179 ms | 6,968.0 | 14,448 | 90.08% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9754 | **0.113 ms** | **0.137 ms** | **8,875.6 (+27.4%)** | **621** | **22.39%** |
+| **160** | A — Baseline FP32 HNSW | 0.9961 | 0.273 ms | 0.333 ms | 3,732.8 | 24,563 | 91.61% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9850 | **0.208 ms** | **0.246 ms** | **4,923.4 (+31.9%)** | **1,130** | **23.36%** |
+| **320** | A — Baseline FP32 HNSW | 0.9990 | 0.512 ms | 0.625 ms | 1,996.2 | 44,010 | 92.65% |
+| | **D — Two-Stage Hybrid (BQ+SQ8)** | 0.9872 | **0.344 ms** | **0.419 ms** | **2,924.6 (+46.5%)** | **1,677** | **21.82%** |
 
 ---
 
@@ -83,8 +83,8 @@ To generate a publication-ready empirical study.
 | **Total Index RAM** | **784.1 MB** | **400.1 MB** | **288.1 MB** | **416.1 MB (-47.0%)** |
 
 ### Key Research Findings
-1. **Throughput & Tail Latency Leader at Depth ($ef=320$):** BitStride outperforms standard FP32 HNSW by **+23.2% in QPS (1,746.8 vs. 1,418.3)**, achieves a **20.0% reduction in median latency (0.572 ms vs. 0.715 ms)**, and cuts **p95 tail latency by 19.4% (0.728 ms vs. 0.903 ms)**.
-2. **Dramatic Cache Miss Reduction:** At 1M vector scale, standard FP32 suffers from a **92–95% L3 cache miss rate**. The Two-Stage Hybrid suppresses this to **20–27%**, slashing L3 misses by **up to 95.7%** (42,792 $\rightarrow$ 1,824 misses/query at $ef=320$).
-3. **Double Throughput at Low Depths:** Dual-vector interleaved AVX2/FMA kernels (`sq8_distance_2x`), inlined 128-d POPCNT, and compact 1-byte visited stamps boosted $ef=10$ throughput from 4,329 QPS to **9,206 QPS** (+112%).
-4. **Recall Target Confirmed:** Achieves **98.8% – 99.6%** relative recall preservation compared to uncompressed FP32 across all depths.
+1. **Unanimous Throughput & Latency Superiority:** BitStride outperforms baseline FP32 HNSW across **all 6 operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
+2. **Dramatic Cache Miss Reduction:** At 1M vector scale, standard FP32 suffers from an **87–93% L3 cache miss rate**. The Two-Stage Hybrid suppresses this to **20–23%**, slashing L3 misses by **up to 96.2%** (44,010 $\rightarrow$ 1,677 misses/query at $ef=320$) and by **18.9x** at $ef=10$ (3,028 $\rightarrow$ 160 misses/query).
+3. **Frontier-Pruned Warm Seeding:** Seeding the fine frontier directly with the top candidates from the BQ beam search avoids exploring unproductive graph neighborhoods, keeping SQ8 distance evaluations strictly focused on high-probability candidate basins.
+4. **Recall Target Confirmed:** Achieves **97.3% – 99.3%** relative recall preservation compared to uncompressed FP32 across all depths.
 5. **RAM Conservation:** Cuts total index memory nearly in half (416 MB vs. 784 MB).

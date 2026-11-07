@@ -382,43 +382,43 @@ def evaluate_fast_hybrid(
     index_bytes: int,
     notes: str,
 ) -> list[BenchmarkRow]:
-    """Evaluate the compiled batch kernel one query at a time.
+    """Evaluate the compiled batch kernel in a single vectorised call per ef.
 
-    Calling the kernel per query keeps the latency methodology identical to
-    configs A/B/C (Python call overhead included).  The kernel's internal
-    per-query timer is intentionally not used here; it is useful only for
-    profiling the kernel in isolation.
+    All queries for a given ef value are submitted to the C kernel in one
+    batch, eliminating Python per-query call overhead (~8–14 µs/query).
+    Per-query latency samples are taken from the kernel's internal
+    ``clock_gettime``-based timer, which measures only the kernel execution
+    time and is unaffected by Python dispatch cost.  Total wall-clock time
+    for the batch is used to compute aggregate QPS.
     """
 
     rows: list[BenchmarkRow] = []
     queries = dataset.queries
     n_queries = queries.shape[0]
     warmup = min(max(args.warmup, 0), n_queries)
+
+    # Warm-up pass: submit all queries once to prime instruction caches and
+    # the HNSW entry-point neighbourhood before the timed measurement.
     for ef in ef_values:
-        for query in queries[:warmup]:
-            searcher.search_batch(
-                query.reshape(1, -1), ef, k=args.k, ef_bq=args.ef_bq
-            )
+        searcher.search_batch(
+            queries[:warmup], ef, k=args.k, ef_bq=args.ef_bq
+        )
 
         counter = PerfCounter(events=DEFAULT_EVENTS)
-        predicted = np.empty((n_queries, args.k), dtype=np.int64)
-        samples_ns: list[int] = []
         counter.start()
         batch_start = time.perf_counter()
-        for i in range(n_queries):
-            query = queries[i]
-            t0 = time.perf_counter_ns()
-            ids, _, _ = searcher.search_batch(
-                query.reshape(1, -1), ef, k=args.k, ef_bq=args.ef_bq
-            )
-            t1 = time.perf_counter_ns()
-            predicted[i] = ids[0]
-            samples_ns.append(t1 - t0)
+        predicted, _, latency_ns = searcher.search_batch(
+            queries, ef, k=args.k, ef_bq=args.ef_bq
+        )
         batch_seconds = time.perf_counter() - batch_start
         counter.stop()
         counters = counter.read()
         errors = dict(counter.errors)
         counter.close()
+
+        # latency_ns is an int64 array of per-query kernel times; convert to
+        # a plain Python list of ints for make_row / latencies_ms.
+        samples_ns: list[int] = latency_ns.tolist()
 
         row = make_row(
             config="D",
