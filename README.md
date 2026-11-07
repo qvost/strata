@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="BitStride: Asymmetric Cache-Resident Two-Stage HNSW Traversal Engine" width="100%">
+  <img src="assets/banner.svg" alt="Strata: Asymmetric Cache-Resident Two-Stage HNSW Traversal Engine" width="100%">
 </p>
 
-# BitStride: Two-Stage Quantized HNSW Traversal Engine
+# Strata: Two-Stage Quantized HNSW Traversal Engine
 
 An asymmetric, cache-resident approximate nearest neighbor (ANN) search engine designed to eliminate memory-bandwidth bottlenecks in Hierarchical Navigable Small World (HNSW) graphs at million-vector scale.
 
@@ -84,17 +84,17 @@ Evaluation conducted on the full **SIFT1M dataset** ($N = 1,000,000$ base vector
 | $efSearch$ | Configuration | Recall@10 | p50 Latency | p95 Latency | QPS | LLC Misses / Query | LLC Miss Rate |
 | ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
 | **10** | Baseline FP32 HNSW | 0.7584 | 0.032 ms | 0.044 ms | 30,060.4 | 3,028 | 87.09% |
-| | **BitStride Two-Stage Hybrid** | 0.7382 | **0.025 ms** | **0.035 ms** | **38,810.3 (+29.1%)** | **160** | **20.56%** |
+| | **Strata Two-Stage Hybrid** | 0.7382 | **0.025 ms** | **0.035 ms** | **38,810.3 (+29.1%)** | **160** | **20.56%** |
 | **20** | Baseline FP32 HNSW | 0.8754 | 0.049 ms | 0.066 ms | 19,950.2 | 4,706 | 90.21% |
-| | **BitStride Two-Stage Hybrid** | 0.8690 | **0.039 ms** | **0.050 ms** | **25,581.6 (+28.2%)** | **228** | **19.82%** |
+| | **Strata Two-Stage Hybrid** | 0.8690 | **0.039 ms** | **0.050 ms** | **25,581.6 (+28.2%)** | **228** | **19.82%** |
 | **40** | Baseline FP32 HNSW | 0.9517 | 0.083 ms | 0.105 ms | 11,976.1 | 7,886 | 90.58% |
-| | **BitStride Two-Stage Hybrid** | 0.9439 | **0.066 ms** | **0.081 ms** | **15,251.9 (+27.4%)** | **363** | **20.73%** |
+| | **Strata Two-Stage Hybrid** | 0.9439 | **0.066 ms** | **0.081 ms** | **15,251.9 (+27.4%)** | **363** | **20.73%** |
 | **80** | Baseline FP32 HNSW | 0.9851 | 0.146 ms | 0.179 ms | 6,968.0 | 14,448 | 90.08% |
-| | **BitStride Two-Stage Hybrid** | 0.9754 | **0.113 ms** | **0.137 ms** | **8,875.6 (+27.4%)** | **621** | **22.39%** |
+| | **Strata Two-Stage Hybrid** | 0.9754 | **0.113 ms** | **0.137 ms** | **8,875.6 (+27.4%)** | **621** | **22.39%** |
 | **160** | Baseline FP32 HNSW | 0.9961 | 0.273 ms | 0.333 ms | 3,732.8 | 24,563 | 91.61% |
-| | **BitStride Two-Stage Hybrid** | 0.9850 | **0.208 ms** | **0.246 ms** | **4,923.4 (+31.9%)** | **1,130** | **23.36%** |
+| | **Strata Two-Stage Hybrid** | 0.9850 | **0.208 ms** | **0.246 ms** | **4,923.4 (+31.9%)** | **1,130** | **23.36%** |
 | **320** | Baseline FP32 HNSW | 0.9990 | 0.512 ms | 0.625 ms | 1,996.2 | 44,010 | 92.65% |
-| | **BitStride Two-Stage Hybrid** | 0.9872 | **0.344 ms** | **0.419 ms** | **2,924.6 (+46.5%)** | **1,677** | **21.82%** |
+| | **Strata Two-Stage Hybrid** | 0.9872 | **0.344 ms** | **0.419 ms** | **2,924.6 (+46.5%)** | **1,677** | **21.82%** |
 
 ### 3.2. Index Memory Footprint
 
@@ -108,8 +108,8 @@ Evaluation conducted on the full **SIFT1M dataset** ($N = 1,000,000$ base vector
 
 ## 4. Key Performance Insights
 
-1. **Unanimous Throughput Superiority:** BitStride outperforms standard FP32 HNSW across **all tested operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
-2. **Massive Hardware Cache Miss Elimination:** Uncompressed FP32 HNSW suffers from an LLC miss rate between **87.1% and 92.7%** due to non-contiguous 512-byte node accesses. BitStride compresses exploratory hops into L2/L3 cache, reducing total L3 misses by **96.2%** at $efSearch = 320$ (44,010 $\rightarrow$ 1,677 misses/query) and by **18.9x** at $efSearch = 10$ (3,028 $\rightarrow$ 160 misses/query).
+1. **Unanimous Throughput Superiority:** Strata outperforms standard FP32 HNSW across **all tested operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
+2. **Massive Hardware Cache Miss Elimination:** Uncompressed FP32 HNSW suffers from an LLC miss rate between **87.1% and 92.7%** due to non-contiguous 512-byte node accesses. Strata compresses exploratory hops into L2/L3 cache, reducing total L3 misses by **96.2%** at $efSearch = 320$ (44,010 $\rightarrow$ 1,677 misses/query) and by **18.9x** at $efSearch = 10$ (3,028 $\rightarrow$ 160 misses/query).
 3. **Frontier-Pruned Warm Seeding:** Seeding the fine frontier directly with the top candidates from the BQ beam search avoids exploring unproductive graph neighborhoods, keeping SQ8 distance evaluations strictly focused on high-probability candidate basins.
 4. **Recall Preservation Guarantee:** Preserves **97.3% – 99.3%** relative recall compared to uncompressed FP32 across all depths.
 5. **RAM Footprint Reduction:** Reduces resident index memory by **46.9%** (416.1 MB vs. 784.1 MB), allowing the entire BQ navigation layer (16 MB) to reside directly inside CPU L3 cache.

@@ -1,4 +1,4 @@
-# BitStride: Two-Stage Quantized HNSW Traversal Engine
+# Strata: Two-Stage Quantized HNSW Traversal Engine
 
 ## 1. What We Are Trying to Achieve
 
@@ -83,7 +83,7 @@ To generate a publication-ready empirical study.
 | **Total Index RAM** | **784.1 MB** | **400.1 MB** | **288.1 MB** | **416.1 MB (-47.0%)** |
 
 ### Key Research Findings
-1. **Unanimous Throughput & Latency Superiority:** BitStride outperforms baseline FP32 HNSW across **all 6 operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
+1. **Unanimous Throughput & Latency Superiority:** Strata outperforms baseline FP32 HNSW across **all 6 operating points ($efSearch = 10$ to $320$)**, delivering **+27.4% to +46.5% higher QPS** and **20.0% to 32.8% lower median and tail latencies**.
 2. **Dramatic Cache Miss Reduction:** At 1M vector scale, standard FP32 suffers from an **87–93% L3 cache miss rate**. The Two-Stage Hybrid suppresses this to **20–23%**, slashing L3 misses by **up to 96.2%** (44,010 $\rightarrow$ 1,677 misses/query at $ef=320$) and by **18.9x** at $ef=10$ (3,028 $\rightarrow$ 160 misses/query).
 3. **Frontier-Pruned Warm Seeding:** Seeding the fine frontier directly with the top candidates from the BQ beam search avoids exploring unproductive graph neighborhoods, keeping SQ8 distance evaluations strictly focused on high-probability candidate basins.
 4. **Recall Target Confirmed:** Achieves **97.3% – 99.3%** relative recall preservation compared to uncompressed FP32 across all depths.

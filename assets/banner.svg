@@ -36,7 +36,7 @@
 
   <!-- === WORDMARK + TAGLINE (right side) === -->
 
-  <!-- "BitStride" -->
+  <!-- "Strata" -->
   <text
     x="338"
     y="168"
@@ -45,7 +45,7 @@
     font-weight="700"
     letter-spacing="-2"
     fill="#f8fafc"
-  >BitStride</text>
+  >Strata</text>
 
   <!-- Tagline -->
   <text
