@@ -1,4 +1,4 @@
-# Project Briefing: Two-Stage Quantized HNSW Traversal Engine
+# BitStride: Two-Stage Quantized HNSW Traversal Engine
 
 ## 1. What We Are Trying to Achieve
 

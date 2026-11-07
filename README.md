@@ -1,4 +1,8 @@
-# Two-Stage Quantized HNSW Traversal Engine
+<p align="center">
+  <img src="assets/banner.svg" alt="BitStride: Asymmetric Cache-Resident Two-Stage HNSW Traversal Engine" width="100%">
+</p>
+
+# BitStride: Two-Stage Quantized HNSW Traversal Engine
 
 An asymmetric, cache-resident approximate nearest neighbor (ANN) search engine designed to eliminate memory-bandwidth bottlenecks in Hierarchical Navigable Small World (HNSW) graphs at million-vector scale.
 

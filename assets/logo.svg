@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080C14"/>
+      <stop offset="50%" stop-color="#0B1220"/>
+      <stop offset="100%" stop-color="#0E172A"/>
+    </linearGradient>
+
+    <radialGradient id="iconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00FFA3" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#00FFA3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="iconCyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#00F2FE" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="linkCyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#2E66FF" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <linearGradient id="linkBlueGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2E66FF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00FFA3" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <filter id="nodeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded card -->
+  <rect width="240" height="240" rx="44" fill="url(#iconBg)"/>
+  <rect width="238" height="238" x="1" y="1" rx="43" fill="none" stroke="#1D2A44" stroke-width="2"/>
+
+  <!-- Radial Glows -->
+  <circle cx="150" cy="155" r="75" fill="url(#iconGlow)"/>
+  <circle cx="90" cy="75" r="60" fill="url(#iconCyanGlow)"/>
+
+  <!-- Subtle HNSW Layer Boundary Arcs -->
+  <path d="M 30,115 Q 120,85 210,115" fill="none" stroke="#1C2D4A" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <path d="M 30,175 Q 120,145 210,175" fill="none" stroke="#1C2D4A" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- Edges / Links -->
+  <!-- Highway descent -->
+  <line x1="60" y1="65" x2="120" y2="45" stroke="#00F2FE" stroke-width="2.5" stroke-dasharray="4,3"/>
+  <line x1="120" y1="45" x2="180" y2="75" stroke="#00F2FE" stroke-width="2.5"/>
+  <line x1="120" y1="45" x2="85" y2="125" stroke="url(#linkCyanBlue)" stroke-width="2.5"/>
+
+  <!-- Layer 1 intermediate hops -->
+  <line x1="85" y1="125" x2="155" y2="115" stroke="#2E66FF" stroke-width="2"/>
+  <line x1="180" y1="75" x2="155" y2="115" stroke="url(#linkCyanBlue)" stroke-width="2"/>
+
+  <!-- Layer 0 convergence to focal target -->
+  <line x1="85" y1="125" x2="60" y2="185" stroke="#2E66FF" stroke-width="2"/>
+  <line x1="60" y1="185" x2="150" y2="165" stroke="url(#linkBlueGreen)" stroke-width="2.5"/>
+  <line x1="155" y1="115" x2="150" y2="165" stroke="url(#linkBlueGreen)" stroke-width="2.5"/>
+  <line x1="150" y1="165" x2="195" y2="185" stroke="#00FFA3" stroke-width="2"/>
+
+  <!-- Nodes -->
+  <!-- Upper Highway (BQ) -->
+  <circle cx="60" cy="65" r="6" fill="#00F2FE" filter="url(#nodeGlow)"/>
+  <circle cx="120" cy="45" r="7.5" fill="#FFFFFF" stroke="#00F2FE" stroke-width="2.5"/>
+  <circle cx="180" cy="75" r="6" fill="#00F2FE"/>
+
+  <!-- Intermediate -->
+  <circle cx="85" cy="125" r="6" fill="#2E66FF"/>
+  <circle cx="155" cy="115" r="6.5" fill="#00E5FF" filter="url(#nodeGlow)"/>
+
+  <!-- Layer 0 Perimeter -->
+  <circle cx="60" cy="185" r="5.5" fill="#2E66FF"/>
+  <circle cx="195" cy="185" r="5" fill="#00FFA3"/>
+
+  <!-- Focal Nearest Neighbor Target (Convergence) -->
+  <circle cx="150" cy="165" r="18" fill="none" stroke="#00FFA3" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.6"/>
+  <circle cx="150" cy="165" r="11" fill="none" stroke="#00FFA3" stroke-width="1.8" opacity="0.85"/>
+  <circle cx="150" cy="165" r="6.5" fill="#00FFA3" filter="url(#nodeGlow)"/>
+</svg>
