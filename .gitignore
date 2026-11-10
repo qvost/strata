@@ -34,3 +34,6 @@ data/sift.tar.gz
 # Local scratch and task logs
 scratch/
 .system_generated/
+
+# Assets scratch
+assets/logo_candidate_*.png

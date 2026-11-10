@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+
+  <!-- Background -->
+  <rect width="400" height="400" fill="#0d0d12"/>
+
+  <!-- Container: rounded square chip -->
+  <rect x="60" y="60" width="280" height="280" rx="36" ry="36" fill="#12121a"/>
+
+  <!-- Three ascending bars (stride motif — BQ → SQ8 → FP32 precision tiers) -->
+  <!-- Bar 1: low precision (BQ stage), shortest -->
+  <rect x="102" y="254" width="58" height="66" rx="8" ry="8" fill="#f1f5f9"/>
+
+  <!-- Bar 2: mid precision (SQ8 stage), medium -->
+  <rect x="174" y="184" width="58" height="136" rx="8" ry="8" fill="#f1f5f9"/>
+
+  <!-- Bar 3: high precision (FP32 reference), tallest -->
+  <rect x="246" y="114" width="58" height="206" rx="8" ry="8" fill="#f1f5f9" opacity="0.35"/>
+
+  <!-- Traversal path: cyan polyline connecting bar tops (the HNSW search path) -->
+  <polyline
+    points="131,254  174,184  246,114"
+    fill="none"
+    stroke="#22d3ee"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.9"
+  />
+
+  <!-- Nodes at each step -->
+  <circle cx="131" cy="254" r="5" fill="#22d3ee"/>
+  <circle cx="203" cy="184" r="5" fill="#22d3ee"/>
+  <circle cx="275" cy="114" r="5" fill="#22d3ee" opacity="0.5"/>
+
+</svg>
